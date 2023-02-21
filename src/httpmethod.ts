@@ -1,18 +1,17 @@
-const axios = require('axios');
+import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 /**
  * GET method
  * @param url request path
  * @returns 取得伺服器回應
  */
-export async function GET(url: string): Promise<any> {
-  const config = {
+export async function GET(url: string): Promise<AxiosResponse> {
+  const config: AxiosRequestConfig = {
     method: 'get',
     url: url,
     headers: {},
     timeout: 15000,
   };
-  let data: any = {};
-
+  let data;
   try {
     const wait = GetRateLimit();
     if (wait !== 0) {
@@ -20,8 +19,9 @@ export async function GET(url: string): Promise<any> {
     }
     data = await axios(config);
     cache = new Date();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(error);
+    throw error;
   }
   return data;
 }
@@ -33,25 +33,25 @@ export async function GET(url: string): Promise<any> {
  */
 export async function POST(
   url: string,
-  header: any,
-  content: any
-): Promise<any> {
+  header: object,
+  content: object
+): Promise<AxiosResponse> {
   const config = {
     method: 'post',
     url: url,
     data: content,
     headers: header,
   };
-  let data: any = {};
-
+  let data;
   try {
     if (waitRateMS !== 0) {
       await sleep(GetRateLimit());
     }
     data = await axios(config);
     cache = new Date();
-  } catch (error: any) {
-    console.log(error['message']);
+  } catch (error: unknown) {
+    console.log(error);
+    throw error;
   }
   return data;
 }

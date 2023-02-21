@@ -1,30 +1,27 @@
 /* eslint-disable node/no-unsupported-features/node-builtins */
 import * as fs from 'node:fs/promises';
-import {stat} from 'node:fs/promises';
-import {extname} from 'node:path';
+import {readdir, stat} from 'node:fs/promises';
 import path = require('node:path');
 import {join} from 'path';
 import {dirname} from 'path';
-const {
-  promises: {readdir},
-} = require('fs');
+
 /** 寫入檔案，並自動檢查是否有相應的資料夾位置
  * @param path 檔案位置
  * @param content 檔案內容
  * @returns true-成功  false-失敗
  */
-export async function WriteFile(targetPath: string, content: any) {
+export async function WriteFile(targetPath: string, content: object) {
   const parentPath = dirname(targetPath);
   await MKDir(parentPath);
   targetPath = join(targetPath);
-  await fs.writeFile(targetPath, content, 'utf-8');
+  await fs.writeFile(targetPath, JSON.stringify(content), 'utf-8');
 }
 /**
  * 依照JSON的格式寫入檔案，並自動檢查是否有相應的資料夾位置
  * @param targetPath 指定位置
  * @param content 內容
  */
-export async function WriteFileAsJSON(targetPath: string, content: any) {
+export async function WriteFileAsJSON(targetPath: string, content: object) {
   const parentPath = dirname(targetPath);
   await MKDir(parentPath);
   targetPath = join(targetPath);
@@ -66,14 +63,14 @@ export async function GetAllFilesName(dirPath: string): Promise<string[]> {
 }
 export const GetDirectories = async (source: string): Promise<string[]> =>
   (await readdir(source, {withFileTypes: true}))
-    .filter((dirent: any) => dirent.isDirectory())
-    .map((dirent: any) => dirent.name);
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
 /**
  * 刪除檔案
  * @param path 檔案位置
  */
 export async function DeleteFile(path: string) {
-  await fs.unlink(path).catch((err: any) => {
+  await fs.unlink(path).catch((err: unknown) => {
     console.log(err);
   });
 }
