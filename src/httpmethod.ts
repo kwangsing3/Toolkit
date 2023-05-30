@@ -1,14 +1,21 @@
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
+import axios, {
+  AxiosRequestConfig,
+  AxiosRequestHeaders,
+  AxiosResponse,
+} from 'axios';
 /**
  * GET method
  * @param url request path
  * @returns 取得伺服器回應
  */
-export async function GET(url: string): Promise<AxiosResponse> {
+export async function GET(
+  url: string,
+  headers?: AxiosRequestHeaders
+): Promise<AxiosResponse> {
   const config: AxiosRequestConfig = {
     method: 'get',
     url: url,
-    headers: {},
+    headers: headers,
     timeout: 15000,
   };
   let data;
@@ -33,10 +40,10 @@ export async function GET(url: string): Promise<AxiosResponse> {
  */
 export async function POST(
   url: string,
-  header: object,
-  content: object
+  content: object,
+  header?: AxiosRequestHeaders
 ): Promise<AxiosResponse> {
-  const config = {
+  const config: AxiosRequestConfig = {
     method: 'post',
     url: url,
     data: content,
