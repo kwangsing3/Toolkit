@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -41,7 +41,7 @@ func GET(url string, header map[string]string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	// Transfer
-	sitemap, err := ioutil.ReadAll(resp.Body)
+	sitemap, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func POST(url string, header map[string]string, query []byte) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	sitemap, err := ioutil.ReadAll(resp.Body)
+	sitemap, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func DELETE(url string, header map[string]string, query []byte) ([]byte, error) 
 		return nil, err
 	}
 	defer resp.Body.Close()
-	sitemap, err := ioutil.ReadAll(resp.Body)
+	sitemap, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func PUT(url string, header map[string]string, content string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	sitemap, err := ioutil.ReadAll(resp.Body)
+	sitemap, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func PUT(url string, header map[string]string, content string) ([]byte, error) {
 // ReadFile: Standard Read file operate. <return> []byte.
 func ReadFile(inputPath string) ([]byte, error) {
 	// 讀取文件內容
-	content, err := ioutil.ReadFile(inputPath)
+	content, err := os.ReadFile(inputPath)
 	if err != nil {
 		return nil, err
 	}
