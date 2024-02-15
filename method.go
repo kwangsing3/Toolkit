@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -18,12 +17,6 @@ import (
 // GET: To get data from GET method, need to wait for respone
 // <url>: request address.
 func GET(url string, header map[string]string) ([]byte, error) {
-	if url == "" {
-		return nil, errors.New("GET empty URL")
-	} else if url == "empty" { //return null
-		return nil, nil
-	}
-
 	/*
 		var expression string = `https?:\/\/?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
 		matched, err := regexp.Match(expression, []byte(url))
@@ -36,23 +29,20 @@ func GET(url string, header map[string]string) ([]byte, error) {
 	defer client.CloseIdleConnections()
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	//req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	for key, value := range header {
 		req.Header.Add(key, value)
 	}
-
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
+	// Transfer
 	sitemap, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	return sitemap, nil
@@ -67,7 +57,6 @@ func POST(url string, header map[string]string, query []byte) ([]byte, error) {
 	defer client.CloseIdleConnections()
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	//req.Header.Add("If-None-Match", `W/"wyzzy"`)
@@ -77,13 +66,11 @@ func POST(url string, header map[string]string, query []byte) ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 	sitemap, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	return sitemap, nil
@@ -101,7 +88,6 @@ func DELETE(url string, header map[string]string, query []byte) ([]byte, error) 
 	defer client.CloseIdleConnections()
 	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(query))
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	//req.Header.Add("If-None-Match", `W/"wyzzy"`)
@@ -110,13 +96,11 @@ func DELETE(url string, header map[string]string, query []byte) ([]byte, error) 
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 	sitemap, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	return sitemap, nil
@@ -135,7 +119,6 @@ func PUT(url string, header map[string]string, content string) ([]byte, error) {
 	defer client.CloseIdleConnections()
 	req, err := http.NewRequest("PUT", url, context)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	//req.Header.Add("If-None-Match", `W/"wyzzy"`)
@@ -144,13 +127,11 @@ func PUT(url string, header map[string]string, content string) ([]byte, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 	sitemap, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	return sitemap, nil
@@ -158,55 +139,35 @@ func PUT(url string, header map[string]string, content string) ([]byte, error) {
 
 // ReadFile: Standard Read file operate. <return> []byte.
 func ReadFile(inputPath string) ([]byte, error) {
-
-	if path.IsAbs(inputPath) {
-		return nil, errors.New("read file path: emtpy")
-	}
-	file, err := os.Open(path.Join(inputPath))
+	// 讀取文件內容
+	content, err := ioutil.ReadFile(inputPath)
 	if err != nil {
-		return nil, errors.New(`read file path: ` + err.Error())
+		return nil, err
 	}
-	defer file.Close()
-	byteData, readErr := ioutil.ReadAll(file)
-	if readErr != nil {
-		return nil, errors.New(`read file path: ` + readErr.Error())
-	}
-	return byteData, nil
+	return content, nil
 }
 
 // WriteFile:
 func WriteFile(inputPath string, data []byte) error {
 	dir := filepath.Dir(inputPath)
 	// 使用 os.MkdirAll 確保目錄存在
-	er := os.MkdirAll(dir, os.ModePerm)
-	if er != nil {
-		return errors.New(`write file path: ` + er.Error())
+	if er := os.MkdirAll(dir, os.ModePerm); er != nil {
+		panic(er) //不應到此
 	}
-	file, err := os.Create(path.Join(inputPath))
-	if err != nil {
-		return errors.New(`write file path: ` + err.Error())
-	}
+	file, _ := os.Create(path.Join(inputPath))
 	defer file.Close()
-	res, _ := json.MarshalIndent(data, "", "    ") // 設定每個屬性前的縮進，這裡是四個空格
+	res, err := json.MarshalIndent(data, "", "    ") // 設定每個屬性前的縮進，這裡是四個空格
 	file.Write(res)
-	return nil
+	return err
 }
 
 // WriteJSON:
-func WriteJSON(filename string, data interface{}) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
+func WriteJSON(filePath string, data interface{}) error {
+	file, _ := os.Create(filePath)
 	defer file.Close()
-
 	// 使用 json.NewEncoder 將資料序列化並寫入檔案
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ") // 設定縮排，讓 JSON 更易讀
-	err = encoder.Encode(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	err := encoder.Encode(data)
+	return err
 }
