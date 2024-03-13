@@ -55,7 +55,7 @@ func POST(url string, header map[string]string, query []byte) ([]byte, error) {
 
 	client := &http.Client{}
 	defer client.CloseIdleConnections()
-	req, err := http.NewRequest("POST", url, nil)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(query))
 	if err != nil {
 		return nil, err
 	}
