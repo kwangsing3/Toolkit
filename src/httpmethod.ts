@@ -1,35 +1,36 @@
-import axios, {
-  AxiosRequestConfig,
-  AxiosResponse,
-} from 'axios';
+import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 /**
  * GET method
  * @param url request path
  * @returns 取得伺服器回應
  */
-export async function GET(
+export async function GET<T>(
   url: string,
-  headers?: {[x: string]: string}
-): Promise<AxiosResponse> {
+  headers?: {[x: string]: string},
+  timeout?: number,
+  maxRedirects?: number
+): Promise<T | null> {
   const config: AxiosRequestConfig = {
     method: 'get',
     url: url,
     headers: headers,
-    timeout: 15000,
+    timeout: timeout === undefined ? 15000 : timeout,
   };
-  let data;
-  try {
-    const wait = GetRateLimit();
-    if (wait !== 0) {
-      await sleep(wait);
-    }
-    data = await axios(config);
-    cache = new Date();
-  } catch (error: unknown) {
-    console.log(error);
-    throw error;
+  if (maxRedirects === 0) {
+    config.maxRedirects = maxRedirects;
+    config.validateStatus = function (status: number) {
+      return status >= 200 && status < 303;
+    };
   }
-  return data;
+  try {
+    if (waitRateMS !== 0) await Sleep(GetRateLimit());
+    const response: AxiosResponse<T> = await axios(config);
+    cache = new Date();
+    return response.data;
+  } catch (error: unknown) {
+    console.log(`GET request failed: ${error}`);
+    return null;
+  }
 }
 /**
  * POST method
@@ -37,41 +38,45 @@ export async function GET(
  * @param content request body
  * @returns 取決於伺服器實作，可能不會出現回傳。
  */
-export async function POST(
+export async function POST<T>(
   url: string,
-  content: object,
-  header?: {[x: string]: string}
-): Promise<AxiosResponse> {
+  header: {[x: string]: string},
+  content: {[x: string]: string},
+  timeout?: number,
+  maxRedirects?: number
+): Promise<T | null> {
   const config: AxiosRequestConfig = {
     method: 'post',
     url: url,
     data: content,
     headers: header,
+    timeout: timeout === undefined ? 15000 : timeout,
   };
-  let data;
-  try {
-    if (waitRateMS !== 0) {
-      await sleep(GetRateLimit());
-    }
-    data = await axios(config);
-    cache = new Date();
-  } catch (error: unknown) {
-    console.log(error);
-    throw error;
+  if (maxRedirects === 0) {
+    config.maxRedirects = maxRedirects;
+    config.validateStatus = function (status: number) {
+      return status >= 200 && status < 303;
+    };
   }
-  return data;
+  try {
+    if (waitRateMS !== 0) await Sleep(GetRateLimit());
+    const response: AxiosResponse<T> = await axios(config);
+    cache = new Date();
+    return response.data;
+  } catch (error: unknown) {
+    console.log(`POST request failed: ${error}`);
+    return null;
+  }
 }
-
-function sleep(ms: number): Promise<unknown> {
+/*
+  依照速率阻塞線程。
+*/
+export function Sleep(ms: number): Promise<unknown> {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
 }
 
-/*
-    製作目標:
-       依照速率阻塞線程。
-*/
 let waitRateMS = 0;
 let cache = new Date();
 // 一分鐘可接受次數
