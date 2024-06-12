@@ -1,6 +1,5 @@
 import axios, {
   AxiosRequestConfig,
-  AxiosRequestHeaders,
   AxiosResponse,
 } from 'axios';
 /**
@@ -10,7 +9,7 @@ import axios, {
  */
 export async function GET(
   url: string,
-  headers?: AxiosRequestHeaders
+  headers?: {[x: string]: string}
 ): Promise<AxiosResponse> {
   const config: AxiosRequestConfig = {
     method: 'get',
@@ -41,7 +40,7 @@ export async function GET(
 export async function POST(
   url: string,
   content: object,
-  header?: AxiosRequestHeaders
+  header?: {[x: string]: string}
 ): Promise<AxiosResponse> {
   const config: AxiosRequestConfig = {
     method: 'post',
