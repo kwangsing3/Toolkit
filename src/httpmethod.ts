@@ -22,15 +22,10 @@ export async function GET<T>(
       return status >= 200 && status < 303;
     };
   }
-  try {
-    if (waitRateMS !== 0) await Sleep(GetRateLimit());
-    const response: AxiosResponse<T> = await axios(config);
-    cache = new Date();
-    return response.data;
-  } catch (error: unknown) {
-    console.log(`GET request failed: ${error}`);
-    return null;
-  }
+  if (waitRateMS !== 0) await Sleep(GetRateLimit());
+  const response: AxiosResponse<T> = await axios(config);
+  cache = new Date();
+  return response.data;
 }
 /**
  * POST method
@@ -58,15 +53,10 @@ export async function POST<T>(
       return status >= 200 && status < 303;
     };
   }
-  try {
-    if (waitRateMS !== 0) await Sleep(GetRateLimit());
-    const response: AxiosResponse<T> = await axios(config);
-    cache = new Date();
-    return response.data;
-  } catch (error: unknown) {
-    console.log(`POST request failed: ${error}`);
-    return null;
-  }
+  if (waitRateMS !== 0) await Sleep(GetRateLimit());
+  const response: AxiosResponse<T> = await axios(config);
+  cache = new Date();
+  return response.data;
 }
 /*
   依照速率阻塞線程。
