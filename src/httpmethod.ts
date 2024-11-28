@@ -9,7 +9,7 @@ export async function GET<T>(
   headers?: {[x: string]: string},
   timeout?: number,
   maxRedirects?: number
-): Promise<T | null> {
+): Promise<T> {
   const config: AxiosRequestConfig = {
     method: 'get',
     url: url,
@@ -39,7 +39,7 @@ export async function POST<T>(
   content: {[x: string]: string},
   timeout?: number,
   maxRedirects?: number
-): Promise<T | null> {
+): Promise<T> {
   const config: AxiosRequestConfig = {
     method: 'post',
     url: url,
