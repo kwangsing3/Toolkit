@@ -1,4 +1,22 @@
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
+import axios, {
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosResponse,
+  AxiosResponseHeaders,
+  RawAxiosResponseHeaders,
+} from 'axios';
+/**
+ * 統一回覆格式
+ */
+type Result<T> = {
+  success: boolean;
+  data: T | null;
+  status: number;
+  statusText: string;
+  headers: RawAxiosResponseHeaders | AxiosResponseHeaders;
+  config: AxiosRequestConfig;
+};
+
 /**
  * GET method
  * @param url request path
@@ -9,13 +27,14 @@ export async function GET<T>(
   headers?: {[x: string]: string},
   timeout?: number,
   maxRedirects?: number
-): Promise<T> {
+): Promise<Result<T>> {
   const config: AxiosRequestConfig = {
     method: 'get',
     url: url,
     headers: headers,
     timeout: timeout === undefined ? 15000 : timeout,
   };
+  //code 3xx 在一般情況下歸納成錯誤處理，這裡直接歸納回來
   if (maxRedirects === 0) {
     config.maxRedirects = maxRedirects;
     config.validateStatus = function (status: number) {
@@ -23,9 +42,20 @@ export async function GET<T>(
     };
   }
   if (waitRateMS !== 0) await Sleep(GetRateLimit());
-  const response: AxiosResponse<T> = await axios(config);
   cache = new Date();
-  return response.data;
+  try {
+    const response = await axios(config);
+    return {
+      success: true,
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      config: response.config,
+    };
+  } catch (error) {
+    return HandleAxiosError(error as AxiosError);
+  }
 }
 /**
  * POST method
@@ -36,10 +66,10 @@ export async function GET<T>(
 export async function POST<T>(
   url: string,
   header: {[x: string]: string},
-  content: {[x: string]: string},
+  content: {[x: string]: string} | string,
   timeout?: number,
   maxRedirects?: number
-): Promise<T> {
+): Promise<AxiosResponse<T>> {
   const config: AxiosRequestConfig = {
     method: 'post',
     url: url,
@@ -56,7 +86,7 @@ export async function POST<T>(
   if (waitRateMS !== 0) await Sleep(GetRateLimit());
   const response: AxiosResponse<T> = await axios(config);
   cache = new Date();
-  return response.data;
+  return response;
 }
 /*
   依照速率阻塞線程。
@@ -79,3 +109,26 @@ export const GetRateLimit = () => {
 
   return minus <= 0 ? 0 : waitRateMS - minus;
 };
+
+// 錯誤處理函式 (與 GET 範例共用)
+function HandleAxiosError(error: AxiosError) {
+  // 伺服器回應的錯誤
+  if (error.response) {
+    console.error(`❌ 請求失敗：
+      狀態碼: ${error.response.status}
+      訊息: ${error.response.statusText}
+      資料: ${JSON.stringify(error.response.data)}`);
+  } else if (error.request) {
+    console.error('❌ 請求已發送，但未收到回應。'); // 沒有收到回應
+  } else {
+    console.error(`❌ 發生錯誤: ${error.message}`); // 發送請求時發生的其他錯誤
+  }
+  return {
+    success: false,
+    data: null,
+    status: error.response?.status || 0,
+    statusText: error.response?.statusText || 'Unknown Error',
+    headers: error.response?.headers || {},
+    config: error.config as AxiosRequestConfig, // 確保這裡的 config 是 AxiosRequestConfig 類型
+  };
+}
