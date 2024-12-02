@@ -1,4 +1,3 @@
-/* eslint-disable node/no-unsupported-features/node-builtins */
 import * as fs from 'node:fs/promises';
 import {readdir, stat} from 'node:fs/promises';
 import path = require('node:path');

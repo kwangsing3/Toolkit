@@ -13,7 +13,7 @@ export function ConnectToDB(
   host: string,
   user: string,
   password: string,
-  db: string
+  db: string,
 ) {
   try {
     pool = mariadb.createPool({
@@ -37,7 +37,7 @@ export function ConnectToDB(
 export async function GetContent(query: string) {
   const conn = await pool.getConnection();
   if (conn) {
-    conn.end();
+    await conn.end();
   } else {
     throw new Error('DataBase 連接錯誤');
   }
@@ -63,7 +63,7 @@ export async function CloseConnect() {
 export async function CreateTable(
   input: {name: string; type: string}[],
   database: string,
-  tableName: string
+  tableName: string,
 ) {
   let volume = '';
   for (let index = 0; index < input.length; index++) {
@@ -89,7 +89,7 @@ export async function CreateTable(
 export async function Upsert(
   content: Object,
   database: string,
-  tableName: string
+  tableName: string,
 ) {
   const keylist = Object.keys(content);
   const valuelist = Object.values(content);
@@ -133,7 +133,7 @@ export async function Upsert(
 export async function Insert(
   content: Object,
   tableName: string,
-  database: string
+  database: string,
 ) {
   const keylist = Object.keys(content);
   let value = '';
@@ -161,7 +161,7 @@ export async function Insert(
 export async function ForceUpsert(
   content: Object,
   database: string,
-  tableName: string
+  tableName: string,
 ) {
   const keylist = Object.keys(content);
   let hasKey = false; //有沒有指定主鍵
@@ -185,7 +185,7 @@ export async function ForceUpsert(
       //Force Create Table
       for (let index = 0; index < keylist.length; index++) {
         await GetContent(
-          `ALTER TABLE ${database}.${tableName} ADD COLUMN IF NOT EXISTS ${keylist[index]} LONGTEXT;`
+          `ALTER TABLE ${database}.${tableName} ADD COLUMN IF NOT EXISTS ${keylist[index]} LONGTEXT;`,
         );
       }
       console.log(`Force Alter Table ${database}.${tableName} `);
