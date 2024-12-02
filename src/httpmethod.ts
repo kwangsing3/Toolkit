@@ -125,7 +125,7 @@ export const GetRateLimit = () => {
 function HandleAxiosError(error: AxiosError) {
   // 伺服器回應的錯誤
   if (error.response) {
-    console.error(`❌ 請求失敗：
+    console.error(`❌ 請求失敗： ${error.config?.url}
       狀態碼: ${error.response.status}
       訊息: ${error.response.statusText}
       資料: ${JSON.stringify(error.response.data)}`);
