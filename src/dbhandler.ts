@@ -197,3 +197,15 @@ export async function ForceUpsert(
     }
   }
 }
+
+
+
+/**
+ * 轉換JS Date 成SQL可接受的 Datetime格式
+ * @param date
+ * @returns
+ */
+export function ToSQLDatetime(date: Date) {
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
